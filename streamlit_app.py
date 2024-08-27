@@ -7,6 +7,7 @@ import requests
 from io import BytesIO
 import tensorflow_hub as hub
 
+# Set up TensorFlow Hub to load compressed models using Streamlit secrets
 os.environ['TFHUB_MODEL_LOAD_FORMAT'] = st.secrets["TFHUB_MODEL_LOAD_FORMAT"]
 
 # Function to convert tensor to image
@@ -48,22 +49,26 @@ if content_url and style_url:
     content_image = load_img_from_url(content_url)
     style_image = load_img_from_url(style_url)
 
+    st.image(tensor_to_image(content_image), caption='Content Image', use_column_width=True)
+    st.image(tensor_to_image(style_image), caption='Style Image', use_column_width=True)
 
-    # Load the model from TensorFlow Hub
-    st.write("Stylizing image...")
-    hub_model = hub.load('https://tfhub.dev/google/magenta/arbitrary-image-stylization-v1-256/2')
+    # Button to generate stylized image
+    if st.button("Generate Image"):
+        # Load the model from TensorFlow Hub
+        st.write("Stylizing image...")
+        hub_model = hub.load('https://tfhub.dev/google/magenta/arbitrary-image-stylization-v1-256/2')
 
-    # Apply style transfer
-    stylized_image = hub_model(tf.constant(content_image), tf.constant(style_image))[0]
+        # Apply style transfer
+        stylized_image = hub_model(tf.constant(content_image), tf.constant(style_image))[0]
 
-    # Convert tensor to image and display
-    result_image = tensor_to_image(stylized_image)
-    st.image(result_image, caption='Stylized Image', use_column_width=True)
+        # Convert tensor to image and display
+        result_image = tensor_to_image(stylized_image)
+        st.image(result_image, caption='Stylized Image', use_column_width=True)
 
-    # Option to download the stylized image
-    st.download_button(
-        label="Download Stylized Image",
-        data=result_image.tobytes(),
-        file_name="stylized_image.png",
-        mime="image/png"
-    )
+        # Option to download the stylized image
+        st.download_button(
+            label="Download Stylized Image",
+            data=result_image.tobytes(),
+            file_name="stylized_image.png",
+            mime="image/png"
+        )
