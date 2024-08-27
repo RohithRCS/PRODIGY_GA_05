@@ -7,8 +7,6 @@ import requests
 from io import BytesIO
 import tensorflow_hub as hub
 
-# Set up TensorFlow Hub to load compressed models
-os.environ['TFHUB_MODEL_LOAD_FORMAT'] = 'COMPRESSED'
 
 # Function to convert tensor to image
 def tensor_to_image(tensor):
@@ -49,8 +47,6 @@ if content_url and style_url:
     content_image = load_img_from_url(content_url)
     style_image = load_img_from_url(style_url)
 
-    st.image(tensor_to_image(content_image), caption='Content Image', use_column_width=True)
-    st.image(tensor_to_image(style_image), caption='Style Image', use_column_width=True)
 
     # Load the model from TensorFlow Hub
     st.write("Stylizing image...")
