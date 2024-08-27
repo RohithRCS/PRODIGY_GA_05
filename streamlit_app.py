@@ -1,9 +1,10 @@
 import os
 import tensorflow as tf
 import streamlit as st
-import matplotlib.pyplot as plt
 import numpy as np
 import PIL.Image
+import requests
+from io import BytesIO
 import tensorflow_hub as hub
 
 # Set up TensorFlow Hub to load compressed models
@@ -18,13 +19,15 @@ def tensor_to_image(tensor):
         tensor = tensor[0]
     return PIL.Image.fromarray(tensor)
 
-# Function to load and preprocess the image
-def load_img(path_to_img):
-    max_dim = 512
-    img = tf.io.read_file(path_to_img)
-    img = tf.image.decode_image(img, channels=3)
+# Function to load and preprocess the image from URL
+def load_img_from_url(url):
+    response = requests.get(url)
+    img = PIL.Image.open(BytesIO(response.content))
+    img = img.convert('RGB')
+    img = tf.convert_to_tensor(np.array(img), dtype=tf.float32)
     img = tf.image.convert_image_dtype(img, tf.float32)
 
+    max_dim = 512
     shape = tf.cast(tf.shape(img)[:-1], tf.float32)
     long_dim = max(shape)
     scale = max_dim / long_dim
@@ -37,14 +40,14 @@ def load_img(path_to_img):
 # Streamlit UI components
 st.title("Image Stylization with TensorFlow Hub")
 
-# Upload content and style images
-content_file = st.file_uploader("Choose a content image...", type=["jpg", "jpeg", "png"])
-style_file = st.file_uploader("Choose a style image...", type=["jpg", "jpeg", "png"])
+# Input URLs for content and style images
+content_url = st.text_input("Enter the content image URL:")
+style_url = st.text_input("Enter the style image URL:")
 
-if content_file and style_file:
+if content_url and style_url:
     # Load and display the content and style images
-    content_image = load_img(content_file)
-    style_image = load_img(style_file)
+    content_image = load_img_from_url(content_url)
+    style_image = load_img_from_url(style_url)
 
     st.image(tensor_to_image(content_image), caption='Content Image', use_column_width=True)
     st.image(tensor_to_image(style_image), caption='Style Image', use_column_width=True)
