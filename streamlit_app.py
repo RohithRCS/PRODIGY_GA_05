@@ -7,6 +7,7 @@ import requests
 from io import BytesIO
 import tensorflow_hub as hub
 
+os.environ['TFHUB_MODEL_LOAD_FORMAT'] = st.secrets["TFHUB_MODEL_LOAD_FORMAT"]
 
 # Function to convert tensor to image
 def tensor_to_image(tensor):
